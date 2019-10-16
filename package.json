@@ -10,7 +10,7 @@
   "author": "Paulius Kutka",
   "license": "ISC",
   "dependencies": {
-    "dotenv": "^8.1.0",
+    "dotenv": "^8.2.0",
     "koa": "^2.8.1",
     "koa-body": "^4.1.1",
     "koa-router": "^7.4.0",

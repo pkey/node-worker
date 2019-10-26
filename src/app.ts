@@ -3,6 +3,8 @@ import Koa from "koa";
 import koaBody from "koa-body";
 import Router from "koa-router";
 
+var os = require("os");
+
 dotenv.config();
 
 const app = new Koa();
@@ -11,7 +13,7 @@ const router = new Router();
 const port = process.env.PORT || 3000;
 
 router.get("/*", async ctx => {
-  ctx.body = "Hello World!";
+  ctx.body = os.hostname();
 });
 
 app.use(koaBody());

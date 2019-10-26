@@ -11,6 +11,10 @@
   "author": "Paulius Kutka",
   "license": "ISC",
   "dependencies": {
+    "@azure/arm-compute": "^11.0.0",
+    "@azure/arm-network": "^18.0.0",
+    "axios": "^0.19.0",
+    "colors": "^1.4.0",
     "dotenv": "^8.2.0",
     "koa": "^2.8.1",
     "koa-body": "^4.1.1",

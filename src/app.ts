@@ -3,7 +3,8 @@ import Koa from "koa";
 import koaBody from "koa-body";
 import Router from "koa-router";
 import request from "request";
-
+import axios from "axios";
+import logger from "./client/logger";
 let os = require("os");
 
 dotenv.config();
@@ -15,45 +16,30 @@ const port = process.env.PORT || 3000;
 
 //User initialises a payload
 router.get("/", async ctx => {
-  //TODO: Do some calculations
+  logger.info("Request received! Starting calculations..");
+
+  // TODO: change to virtual VM sets
   await new Promise(done => setTimeout(done, 1000));
-  console.log("Calculations done.");
 
-  //Notify Controller node
-  console.log("Controller node notified");
-  //Notify other nodes
-  const response: Promise<string[]> = new Promise((resolve, reject) => {
-    request(
-      `http://94.245.107.144:3000/api/node`,
-      { json: true },
-      (error, response, body) => {
-        if (!error && response.statusCode == 200) {
-          resolve(body);
-        } else {
-          reject(error);
-        }
-      }
-    );
-  });
+  logger.info("Calculations finished..");
+  logger.info("Contacting main node-controller..");
 
-  let nodes = await response;
-  nodes = nodes.filter(node => node != os.hostname());
-  console.log("Nodes to notify", nodes);
+  const controllerResponse = await axios.get(
+    "http://94.245.107.144:3000/api/node"
+  );
+  const nodes = controllerResponse.data.filter(node => node != os.hostname());
 
-  //Notify all nodes with the payload
-  nodes.forEach(node => {
-    request.post(
-      `http://${node}:3000`,
-      { json: { notifier: os.hostname(), payload: "some random paylaod" } },
-      function(error, response, body) {
-        if (!error && response.statusCode == 200) {
-          console.log("Node notified: ", body);
-        } else {
-          console.log("Ooops:", error);
-        }
-      }
-    );
-  });
+  logger.info(`Contacting nodes: ${nodes}`);
+  const _ = await Promise.all(
+    nodes.map(node => {
+      axios.post(`http://${node}:3000`, {
+        notifier: os.hostname(),
+        payload: Math.random() * 1000
+      });
+    })
+  );
+
+  ctx.body = {};
 });
 
 router.get("/host", async ctx => {
@@ -63,6 +49,7 @@ router.get("/host", async ctx => {
 router.post("/*", async ctx => {
   console.log("I've been notified by: ", ctx.request.body.notifier);
   console.log("and I've received this data:", ctx.request.body.payload);
+
   ctx.body = {
     message: "Successfuly notified!",
     receiver: os.hostname(),
@@ -70,7 +57,8 @@ router.post("/*", async ctx => {
   };
 });
 
-app.use(koaBody());
-app.use(router.routes());
+app
+  .use(koaBody())
+  .use(router.routes())
 
-app.listen(port, () => console.log(`App listening on port ${port}!`));
+  .listen(port, () => console.log(`App listening on port ${port}!`));

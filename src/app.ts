@@ -16,8 +16,8 @@ const port = process.env.PORT || 3000;
 //User initialises a payload
 router.get("/", async ctx => {
   //TODO: Do some calculations
-
-  await setTimeout(() => console.log("Calculations finished"), 1000);
+  await new Promise(done => setTimeout(done, 1000));
+  console.log("Calculations done.");
 
   //Notify Controller node
   console.log("Controller node notified");

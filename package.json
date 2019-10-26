@@ -21,6 +21,6 @@
     "@types/koa": "^2.0.51",
     "@types/koa-router": "^7.0.42",
     "@types/node": "^12.11.7",
-    "nodemon": "^1.19.2"
+    "nodemon": "^1.19.4"
   }
 }

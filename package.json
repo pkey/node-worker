@@ -5,7 +5,8 @@
   "main": "app.ts",
   "scripts": {
     "start": "ts-node --project tsconfig.json src/app.ts",
-    "dev": "nodemon dist/app.js"
+    "dev": "nodemon dist/app.js",
+    "build": "tsc"
   },
   "author": "Paulius Kutka",
   "license": "ISC",

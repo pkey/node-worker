@@ -24,7 +24,7 @@ router.get("/", async ctx => {
   //Notify other nodes
   const response: Promise<string[]> = new Promise((resolve, reject) => {
     request(
-      `http://NodeControlla:3000/api/node`,
+      `http://94.245.107.144:3000/api/node`,
       { json: true },
       (error, response, body) => {
         if (!error && response.statusCode == 200) {

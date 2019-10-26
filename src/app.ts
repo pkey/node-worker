@@ -36,6 +36,7 @@ router.get("/", async ctx => {
   });
 
   let nodes = await response;
+  nodes = nodes.filter(node => node.split(":")[0] != os.hostname());
   console.log("Nodes to notify", nodes);
 
   //Notify all nodes with the payload

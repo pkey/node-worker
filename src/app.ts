@@ -22,7 +22,7 @@ router.get("/", async ctx => {
   //Notify Controller node
   console.log("Controller node notified");
   //Notify other nodes
-  const response = await request(`http://Controlla:3000/api/node`, {
+  const response = await request(`http://94.245.107.144:3000/api/node`, {
     json: true
   });
   console.info(response)

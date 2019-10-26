@@ -22,12 +22,22 @@ router.get("/", async ctx => {
   //Notify Controller node
   console.log("Controller node notified");
   //Notify other nodes
-  const response = await request(`http://94.245.107.144:3000/api/node`, {
-    json: true
+  const response: Promise<string[]> = new Promise((resolve, reject) => {
+    request(
+      `http://94.245.107.144:3000/api/node`,
+      { json: true },
+      (error, response, body) => {
+        if (!error && response.statusCode == 200) {
+          resolve(body);
+        } else {
+          reject(error);
+        }
+      }
+    );
   });
-  console.info(response)
 
-  const nodes = response.filter(node => node != os.hostname());
+  let nodes = await response;
+  nodes = nodes.filter(node => node != os.hostname());
   console.log("Nodes to notify", nodes);
 
   //Notify all nodes with the payload

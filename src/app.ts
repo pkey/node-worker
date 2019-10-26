@@ -13,13 +13,9 @@ const router = new Router();
 
 const port = process.env.PORT || 3000;
 
-//Perform an action
+//User initialises a payload
 router.get("/", async ctx => {
   const response: Promise<string[]> = new Promise((resolve, reject) => {
-    // request(
-    //   `http://13.74.182.44:3000/api/node`,
-    //   { json: true },
-    //   (error, response, body) => {
     request(
       `http://NodeControlla:3000/api/node`,
       { json: true },
@@ -34,14 +30,19 @@ router.get("/", async ctx => {
   });
 
   let nodes = await response;
-  console.log(nodes);
 
   nodes.forEach(node => {
-    request(`http://${node}/host`, function(error, response, body) {
-      console.log("error:", error); // Print the error if one occurred
-      console.log("statusCode:", response && response.statusCode); // Print the response status code if a response was received
-      console.log("body:", body); // Print the HTML for the Google homepage.
-    });
+    request.post(
+      `http://${node}`,
+      { json: { payload: "some random paylaod" } },
+      function(error, response, body) {
+        if (!error && response.statusCode == 200) {
+          console.log("Node: ", body, "has been notified");
+        } else {
+          console.log("Error:", error);
+        }
+      }
+    );
   });
 });
 
@@ -50,8 +51,10 @@ router.get("/host", async ctx => {
 });
 
 router.post("/*", async ctx => {
-  console.log(ctx.request.body);
-  ctx.body = ctx.request.body;
+  ctx.body = {
+    receiver: os.hostname(),
+    payload: ctx.request.body
+  };
 });
 
 app.use(koaBody());

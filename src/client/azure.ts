@@ -1,4 +1,3 @@
-// @ts-ignore
 import * as azureAuth from "@azure/ms-rest-nodeauth";
 import { ComputeManagementClient } from "@azure/arm-compute";
 import { NetworkManagementClient } from "@azure/arm-network";

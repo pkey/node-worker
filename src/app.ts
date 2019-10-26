@@ -28,9 +28,9 @@ router.get("/", async ctx => {
       logger.info("Creating VM Set..");
       await azureClient.computeClient.virtualMachineScaleSets.beginCreateOrUpdate(
         RESOURCE_NAME,
-        VM_SET_NAME,
-        {
-          location: "northeurope"
+        VM_SET_NAME, {
+          location: "northeurope",
+          tags: ['set']
         }
       );
       logger.info("Spinning up new VM Machines..");

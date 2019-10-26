@@ -37,13 +37,13 @@ router.get("/", async ctx => {
   });
 
   let nodes = await response;
-  nodes = nodes.filter(node => node.split(":")[0] != os.hostname());
+  nodes = nodes.filter(node => node != os.hostname());
   console.log("Nodes to notify", nodes);
 
   //Notify all nodes with the payload
   nodes.forEach(node => {
     request.post(
-      `http://${node}`,
+      `http://${node}:3000`,
       { json: { notifier: os.hostname(), payload: "some random paylaod" } },
       function(error, response, body) {
         if (!error && response.statusCode == 200) {

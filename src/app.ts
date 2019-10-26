@@ -17,7 +17,8 @@ const port = process.env.PORT || 3000;
 router.get("/", async ctx => {
   //TODO: Do some calculations
 
-  setTimeout(() => console.log("Calculations finished"), 1000);
+  await setTimeout(() => console.log("Calculations finished"), 1000);
+
   //Notify Controller node
   console.log("Controller node notified");
   //Notify other nodes
@@ -61,7 +62,7 @@ router.get("/host", async ctx => {
 
 router.post("/*", async ctx => {
   console.log("I've been notified by: ", ctx.request.body.notifier);
-  console.log("and I've received this data:", ctx.request.body.notifier);
+  console.log("and I've received this data:", ctx.request.body.payload);
   ctx.body = {
     message: "Successfuly notified!",
     receiver: os.hostname(),

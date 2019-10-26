@@ -37,7 +37,7 @@ router.get("/", async ctx => {
       { json: { payload: "some random paylaod" } },
       function(error, response, body) {
         if (!error && response.statusCode == 200) {
-          console.log("Node: ", body, "has been notified");
+          console.log(body);
         } else {
           console.log("Error:", error);
         }
@@ -53,7 +53,7 @@ router.get("/host", async ctx => {
 router.post("/*", async ctx => {
   ctx.body = {
     receiver: os.hostname(),
-    payload: ctx.request.body
+    payload: ctx.request.body.payload
   };
 });
 

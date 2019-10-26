@@ -15,6 +15,12 @@ const port = process.env.PORT || 3000;
 
 //User initialises a payload
 router.get("/", async ctx => {
+  //TODO: Do some calculations
+
+  setTimeout(() => console.log("Calculations finished"), 1000);
+  //Notify Controller node
+  console.log("Controller node notified");
+  //Notify other nodes
   const response: Promise<string[]> = new Promise((resolve, reject) => {
     request(
       `http://NodeControlla:3000/api/node`,
@@ -30,16 +36,18 @@ router.get("/", async ctx => {
   });
 
   let nodes = await response;
+  console.log("Nodes to notify", nodes);
 
+  //Notify all nodes with the payload
   nodes.forEach(node => {
     request.post(
       `http://${node}`,
-      { json: { payload: "some random paylaod" } },
+      { json: { notifier: os.hostname(), payload: "some random paylaod" } },
       function(error, response, body) {
         if (!error && response.statusCode == 200) {
-          console.log(body);
+          console.log("Node notified: ", body);
         } else {
-          console.log("Error:", error);
+          console.log("Ooops:", error);
         }
       }
     );
@@ -51,7 +59,10 @@ router.get("/host", async ctx => {
 });
 
 router.post("/*", async ctx => {
+  console.log("I've been notified by: ", ctx.request.body.notifier);
+  console.log("and I've received this data:", ctx.request.body.notifier);
   ctx.body = {
+    message: "Successfuly notified!",
     receiver: os.hostname(),
     payload: ctx.request.body.payload
   };

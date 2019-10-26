@@ -30,7 +30,7 @@ router.get("/", async ctx => {
         RESOURCE_NAME,
         VM_SET_NAME, {
           location: "northeurope",
-          tags: ['set']
+          tags: { ['set']: "set" }
         }
       );
       logger.info("Spinning up new VM Machines..");

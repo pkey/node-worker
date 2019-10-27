@@ -45,7 +45,7 @@ router.get("/", async ctx => {
       const azureClient = await azure.azureClient();
       logger.info("Starting processing..");
 
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await new Promise(resolve => setTimeout(resolve, 5000));
       logger.info("Processing finished, killing..");
     } catch (err) {
       console.log(err);
@@ -58,6 +58,7 @@ router.get("/", async ctx => {
   logger.info("Calculations finished..");
   logger.info("Contacting main node-controller..");
   const nodes = await getNodes();
+  await new Promise(resolve => setTimeout(resolve, 3000));
 
   logger.info(`Contacting nodes`);
   console.table(nodes)

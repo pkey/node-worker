@@ -6,7 +6,6 @@ import koaBody from "koa-body";
 import Router from "koa-router";
 import axios from "axios";
 import logger from "./client/logger";
-import azure from "./client/azure";
 
 const os = require("os");
 
@@ -14,9 +13,6 @@ const app = new Koa();
 const router = new Router();
 
 const port = process.env.PORT || 3000;
-
-const RESOURCE_NAME = "GenXChallenge";
-const VM_SET_NAME = "Compute";
 
 interface Route {
   name: string;
@@ -42,9 +38,7 @@ router.get("/", async ctx => {
 
   const processing = async () => {
     try {
-      const azureClient = await azure.azureClient();
       logger.info("Starting processing..");
-
       await new Promise(resolve => setTimeout(resolve, 5000));
       logger.info("Processing finished, killing..");
     } catch (err) {
@@ -61,7 +55,7 @@ router.get("/", async ctx => {
   await new Promise(resolve => setTimeout(resolve, 3000));
 
   logger.info(`Contacting nodes`);
-  console.table(nodes)
+  console.table(nodes);
   const _ = await Promise.all(
     nodes.map(node => {
       axios.post(`http://${node.ipAddress}:3000/hit`, {

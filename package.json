@@ -1,14 +1,14 @@
 {
-  "name": "node-boilerplate",
+  "name": "node-worker",
   "version": "1.0.0",
-  "description": "A node-api boilerplate code",
+  "description": "Slave worker for P2P Network",
   "main": "app.ts",
   "scripts": {
     "start": "ts-node --project tsconfig.json src/app.ts",
     "dev": "nodemon dist/app.js",
     "build": "tsc"
   },
-  "author": "Paulius Kutka",
+  "author": "Paulius Kutka | Tomas Eglinskas",
   "license": "ISC",
   "dependencies": {
     "@azure/arm-compute": "^11.0.0",
@@ -21,7 +21,6 @@
     "koa": "^2.8.1",
     "koa-body": "^4.1.1",
     "koa-router": "^7.4.0",
-    "request": "^2.88.0",
     "ts-node": "^8.4.1",
     "typescript": "^3.6.4"
   },

@@ -64,7 +64,7 @@ router.get("/", async ctx => {
   const _ = await Promise.all(
     nodes.map(node => {
       axios.post(`http://${node.ipAddress}:3000/hit`, {
-        notifier: node.name,
+        notifier: os.hostname(),
         payload: Math.random() * 5
       });
     })

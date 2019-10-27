@@ -1,76 +1,97 @@
 import * as dotenv from "dotenv";
+dotenv.config();
+
 import Koa from "koa";
 import koaBody from "koa-body";
 import Router from "koa-router";
-import request from "request";
+import axios from "axios";
+import logger from "./client/logger";
+import azure from "./client/azure";
 
-let os = require("os");
-
-dotenv.config();
+const os = require("os");
 
 const app = new Koa();
 const router = new Router();
 
 const port = process.env.PORT || 3000;
 
-//User initialises a payload
+const RESOURCE_NAME = "GenXChallenge";
+const VM_SET_NAME = "Compute";
+
+interface Route {
+  name: string;
+  ipAddress: string;
+}
+
+const getNodes = async () => {
+  try {
+    const controllerResponse = await axios.get(
+      "http://40.127.197.101:3000/api/node"
+    );
+    const nodes: Route[] = controllerResponse.data.filter(
+      node => node.name != os.hostname()
+    );
+    return nodes;
+  } catch (err) {
+    logger.error(err);
+  }
+};
+
 router.get("/", async ctx => {
-  //TODO: Do some calculations
-  await new Promise(done => setTimeout(done, 1000));
-  console.log("Calculations done.");
+  logger.info("Request received! Starting calculations..");
 
-  //Notify Controller node
-  console.log("Controller node notified");
-  //Notify other nodes
-  const response: Promise<string[]> = new Promise((resolve, reject) => {
-    request(
-      `http://94.245.107.144:3000/api/node`,
-      { json: true },
-      (error, response, body) => {
-        if (!error && response.statusCode == 200) {
-          resolve(body);
-        } else {
-          reject(error);
-        }
-      }
-    );
-  });
+  const processing = async () => {
+    try {
+      const azureClient = await azure.azureClient();
+      logger.info("Starting processing..");
 
-  let nodes = await response;
-  nodes = nodes.filter(node => node != os.hostname());
-  console.log("Nodes to notify", nodes);
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      logger.info("Processing finished, killing..");
+    } catch (err) {
+      console.log(err);
+      logger.error(err);
+    }
+  };
 
-  //Notify all nodes with the payload
-  nodes.forEach(node => {
-    request.post(
-      `http://${node}:3000`,
-      { json: { notifier: os.hostname(), payload: "some random paylaod" } },
-      function(error, response, body) {
-        if (!error && response.statusCode == 200) {
-          console.log("Node notified: ", body);
-        } else {
-          console.log("Ooops:", error);
-        }
-      }
-    );
-  });
+  await processing();
+
+  logger.info("Calculations finished..");
+  logger.info("Contacting main node-controller..");
+  const nodes = await getNodes();
+
+  logger.info(`Contacting nodes`);
+  console.table(nodes)
+  const _ = await Promise.all(
+    nodes.map(node => {
+      axios.post(`http://${node.ipAddress}:3000/hit`, {
+        notifier: os.hostname(),
+        payload: Math.random() * 5
+      });
+    })
+  );
+
+  ctx.body = {
+    msg: "Finished load distribution.."
+  };
 });
 
 router.get("/host", async ctx => {
   ctx.body = os.hostname();
 });
 
-router.post("/*", async ctx => {
-  console.log("I've been notified by: ", ctx.request.body.notifier);
-  console.log("and I've received this data:", ctx.request.body.payload);
+router.post("/hit", async ctx => {
+  logger.info(`${os.hostname()} notified by ${ctx.request.body.notifier} `);
+  logger.info(`${os.hostname()} received payload ${ctx.request.body.payload} `);
+
   ctx.body = {
     message: "Successfuly notified!",
     receiver: os.hostname(),
+    notifier: ctx.request.body.notifier,
     payload: ctx.request.body.payload
   };
 });
 
-app.use(koaBody());
-app.use(router.routes());
-
-app.listen(port, () => console.log(`App listening on port ${port}!`));
+app
+  .use(koaBody())
+  .use(router.routes())
+  .listen(port, () => console.log(`App listening on port ${port}!`));

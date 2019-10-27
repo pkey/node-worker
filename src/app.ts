@@ -1,9 +1,9 @@
 import * as dotenv from "dotenv";
-dotenv.config()
+dotenv.config();
 
 import Koa from "koa";
 import koaBody from "koa-body";
-import Router from "koa-router"; 
+import Router from "koa-router";
 import axios from "axios";
 import logger from "./client/logger";
 import azure from "./client/azure";
@@ -16,7 +16,26 @@ const router = new Router();
 const port = process.env.PORT || 3000;
 
 const RESOURCE_NAME = "GenXChallenge";
-const VM_SET_NAME = "Computation";
+const VM_SET_NAME = "Compute";
+
+interface Route {
+  name: string;
+  ipAddress: string;
+}
+
+const getNodes = async () => {
+  try {
+    const controllerResponse = await axios.get(
+      "http://40.127.197.101:3000/api/node"
+    );
+    const nodes: Route[] = controllerResponse.data.filter(
+      node => node.name != os.hostname()
+    );
+    return nodes;
+  } catch (err) {
+    logger.error(err);
+  }
+};
 
 router.get("/", async ctx => {
   logger.info("Request received! Starting calculations..");
@@ -24,65 +43,49 @@ router.get("/", async ctx => {
   const processing = async () => {
     try {
       const azureClient = await azure.azureClient();
+      logger.info("Starting processing..");
 
-      logger.info("Creating VM Set..");
-      await azureClient.computeClient.virtualMachineScaleSets.beginCreateOrUpdate(
-        RESOURCE_NAME,
-        VM_SET_NAME, {
-          location: "northeurope",
-          tags: { ['set']: "set" }
-        }
-      );
-      logger.info("Spinning up new VM Machines..");
-      await azureClient.computeClient.virtualMachineScaleSets.beginStart(
-        RESOURCE_NAME,
-        VM_SET_NAME
-      );
-
-      logger.info("Calculations completed, killing..");
-      await azureClient.computeClient.virtualMachineScaleSets.deleteMethod(
-        RESOURCE_NAME,
-        VM_SET_NAME
-      );
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      logger.info("Processing finished, killing..");
     } catch (err) {
+      console.log(err);
       logger.error(err);
     }
   };
 
-  await processing()
+  await processing();
 
   logger.info("Calculations finished..");
   logger.info("Contacting main node-controller..");
-
-  const controllerResponse = await axios.get(
-    "http://94.245.107.144:3000/api/node"
-  );
-  const nodes = controllerResponse.data.filter(node => node != os.hostname());
+  const nodes = await getNodes();
 
   logger.info(`Contacting nodes: ${nodes}`);
   const _ = await Promise.all(
     nodes.map(node => {
-      axios.post(`http://${node}:3000`, {
-        notifier: os.hostname(),
-        payload: Math.random() * 1000
+      axios.post(`http://${node.ipAddress}:3000/hit`, {
+        notifier: node.name,
+        payload: Math.random() * 5
       });
     })
   );
 
-  ctx.body = {};
+  ctx.body = {
+    msg: "Finished load distribution.."
+  };
 });
 
 router.get("/host", async ctx => {
   ctx.body = os.hostname();
 });
 
-router.post("/*", async ctx => {
-  console.log("I've been notified by: ", ctx.request.body.notifier);
-  console.log("and I've received this data:", ctx.request.body.payload);
+router.post("/hit", async ctx => {
+  logger.info(`${os.hostname()} notified by ${ctx.request.body.notifier} `);
+  logger.info(`${os.hostname()} received payload ${ctx.request.body.payload} `);
 
   ctx.body = {
     message: "Successfuly notified!",
     receiver: os.hostname(),
+    notifier: ctx.request.body.notifier,
     payload: ctx.request.body.payload
   };
 });
@@ -90,5 +93,4 @@ router.post("/*", async ctx => {
 app
   .use(koaBody())
   .use(router.routes())
-
   .listen(port, () => console.log(`App listening on port ${port}!`));

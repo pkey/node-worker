@@ -59,7 +59,8 @@ router.get("/", async ctx => {
   logger.info("Contacting main node-controller..");
   const nodes = await getNodes();
 
-  logger.info(`Contacting nodes: ${nodes}`);
+  logger.info(`Contacting nodes`);
+  console.table(nodes)
   const _ = await Promise.all(
     nodes.map(node => {
       axios.post(`http://${node.ipAddress}:3000/hit`, {

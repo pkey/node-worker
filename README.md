@@ -1,4 +1,7 @@
 ## Slave Worker
+
+[![Greenkeeper badge](https://badges.greenkeeper.io/pkey/node-worker.svg)](https://greenkeeper.io/)
+
 HackMoscow 2019 project. A Node Worker for manageable P2P network. Controller repository: https://github.com/SmallShaqs/node-controller
 
 ### Description
